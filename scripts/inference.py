@@ -54,7 +54,13 @@ def main(config, args):
         audio_feat_length=config.data.audio_feat_length,
     )
 
-    vae = AutoencoderKL.from_pretrained("stabilityai/sd-vae-ft-mse", torch_dtype=dtype)
+    # 优先从本地加载 VAE 模型，如果没有再从 HuggingFace 加载
+    vae_model_path = "stabilityai/sd-vae-ft-mse"
+    local_vae_path = "checkpoints/auxiliary/sd-vae-ft-mse"
+    if os.path.exists(local_vae_path):
+        vae_model_path = local_vae_path
+
+    vae = AutoencoderKL.from_pretrained(vae_model_path, torch_dtype=dtype, local_files_only=True if vae_model_path == local_vae_path else False)
     vae.config.scaling_factor = 0.18215
     vae.config.shift_factor = 0
 
